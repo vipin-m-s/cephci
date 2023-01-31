@@ -3,7 +3,7 @@ version_id: 8.6
 id: rhel
 instance:
   create:
-    image-name: RHEL-8.6.0-x86_64-ga-latest
+    image-name: x86_64-RHEL-8.6.0-updates-20220602.3
     vm-size: ci.m1.medium
 
   setup: |
