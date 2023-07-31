@@ -112,3 +112,16 @@ tests:
       desc: create a container on osp node and display it on ceph node
       module: exec.py
       name: create and display swift container
+
+  - test:
+      clusters:
+        ceph:
+          config:
+            set-env: true
+            script-name: user_create.py
+            config-file-name: non_tenanted_user.yaml
+            timeout: 300
+      desc: create non-tenanted user
+      module: sanity_rgw_multisite.py
+      name: create non-tenanted user
+      polarion-id: CEPH-83575199
