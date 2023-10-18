@@ -173,17 +173,17 @@ def execute_s3_tests(node: CephNode, build: str, encryption: bool = False) -> in
     """
     log.debug("Executing s3-tests")
     try:
-        base_cmd = "cd s3-tests; S3TEST_CONF=config.yaml virtualenv/bin/tox -v"
-        extra_args = "-a '!fails_on_rgw,!fails_strict_rfc2616,!encryption'"
+        base_cmd = "cd s3-tests; S3TEST_CONF=config.yaml virtualenv/bin/tox"
+        extra_args = "-- -m 'not fails_on_rgw,not fails_strict_rfc2616,not encryption'"
         tests = "s3tests"
 
         if not build.startswith("4"):
-            extra_args = "-a '!fails_on_rgw,!fails_strict_rfc2616"
+            extra_args = "-- -m 'not fails_on_rgw,not fails_strict_rfc2616"
 
             if not encryption:
-                extra_args += ",!encryption"
+                extra_args += ",not encryption"
 
-            extra_args += ",!test_of_sts,!s3select,!user-policy,!webidentity_test'"
+            extra_args += ",not test_of_sts,not s3select,not user-policy,not webidentity_test'"
             tests = "s3tests_boto3"
 
         cmd = f"{base_cmd} {extra_args} {tests}"
