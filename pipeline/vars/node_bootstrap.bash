@@ -18,12 +18,30 @@ sudo sysctl -w net.ipv6.conf.eth0.disable_ipv6=1
 sudo yum install -y git-core zip unzip
 sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
 sudo yum install -y p7zip
+sudo curl -LO https://github.com/mikefarah/yq/releases/download/v4.9.6/yq_linux_amd64
+sudo chmod +x yq_linux_amd64;
+sudo mv yq_linux_amd64 /usr/local/bin/yq
+yq --version
 
 # Mount reesi for storing logs
 if [ ! -d "/cephh/cephci-jenkins" ]; then
-    echo "Mounting ressi004"
     sudo mkdir -p /ceph
-    sudo mount -t nfs -o sec=sys,nfsvers=4.1 reesi004.ceph.redhat.com:/ /ceph
+    wget http://magna002.ceph.redhat.com/cephci-jenkins/.cephci_1.yaml -O ${HOME}/.cephci_1.yaml
+    mount_creds_mon_ips=$(yq eval '.mount_creds.mon_ips' ${HOME}/.cephci_1.yaml)
+    mount_creds_mount_point=$(yq eval '.mount_creds.mount_point' ${HOME}/.cephci_1.yaml)
+    mount_creds_client_name=$(yq eval '.mount_creds.client_name' ${HOME}/.cephci_1.yaml)
+    mount_creds_secret=$(yq eval '.mount_creds.secret' ${HOME}/.cephci_1.yaml)
+    mount_command="sudo mount -t ceph $mount_creds_mon_ips $mount_creds_mount_point -o name=$mount_creds_client_name,secret=$mount_creds_secret"
+
+    # Display the resulting mount command
+    echo "Mount Command:"
+    echo "$mount_command"
+
+    # Execute the mount command
+    eval "$mount_command"
+    echo "Mounting ressi004"
+#    sudo mkdir -p /ceph
+#    sudo mount -t nfs -o sec=sys,nfsvers=4.1 reesi004.ceph.redhat.com:/ /ceph
 fi
 
 if [ ${1:-0} -ne 1 ]; then

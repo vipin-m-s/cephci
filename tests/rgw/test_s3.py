@@ -173,18 +173,27 @@ def execute_s3_tests(node: CephNode, build: str, encryption: bool = False) -> in
     """
     log.debug("Executing s3-tests")
     try:
-        base_cmd = "cd s3-tests; S3TEST_CONF=config.yaml virtualenv/bin/tox"
-        extra_args = "-- -m 'not fails_on_rgw,not fails_strict_rfc2616,not encryption'"
+        base_cmd = "cd s3-tests; S3TEST_CONF=config.yaml virtualenv/bin/nosetests -v"
+        extra_args = "-a '!fails_on_rgw,!fails_strict_rfc2616,!encryption'"
         tests = "s3tests"
 
-        if not build.startswith("4"):
-            extra_args = "-- -m 'not fails_on_rgw,not fails_strict_rfc2616"
+        if not build.startswith("7"):
+            extra_args = "-a '!fails_on_rgw,!fails_strict_rfc2616"
 
             if not encryption:
-                extra_args += ",not encryption"
+                extra_args += ",!encryption"
 
-            extra_args += ",not test_of_sts,not s3select,not user-policy,not webidentity_test'"
+            extra_args += ",!test_of_sts,!s3select,!user-policy,!webidentity_test'"
             tests = "s3tests_boto3"
+
+        else:
+            base_cmd = "cd s3-tests; S3TEST_CONF=config.yaml virtualenv/bin/tox"
+            extra_args = "-- -v -m 'not fails_on_rgw and not fails_strict_rfc2616"
+            tests = "s3tests_boto3"
+
+            if not encryption:
+                extra_args += " and not encryption"
+            extra_args += " and not user-policy and not webidentity_test'"
 
         cmd = f"{base_cmd} {extra_args} {tests}"
         return node.exec_command(cmd=cmd, long_running=True)
@@ -339,6 +348,11 @@ def create_s3_user(node: CephNode, user_prefix: str, data: Dict) -> None:
         "email": user_info["email"],
     }
 
+    if user_prefix == "iam":
+        log.info("Adding user-policy caps for IAM user")
+        cmd = f'radosgw-admin caps add --uid={uid} --caps="user-policy=*"'
+        out, err = node.exec_command(sudo=True, cmd=cmd)
+
 
 def create_s3_conf(
     cluster: Ceph,
@@ -371,6 +385,7 @@ def create_s3_conf(
     create_s3_user(node=rgw_node, user_prefix="main", data=data)
     create_s3_user(node=rgw_node, user_prefix="alt", data=data)
     create_s3_user(node=rgw_node, user_prefix="tenant", data=data)
+    create_s3_user(node=rgw_node, user_prefix="iam", data=data)
 
     if kms_keyid:
         data["main"]["kms_keyid"] = kms_keyid

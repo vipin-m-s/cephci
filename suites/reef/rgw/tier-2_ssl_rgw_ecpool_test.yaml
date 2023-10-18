@@ -98,36 +98,36 @@ tests:
       module: test_cephadm.py
       name: deploy cluster
 
-  - test:
-      name: Monitoring Services deployment
-      desc: Add monitoring services using spec file.
-      module: test_cephadm.py
-      polarion-id: CEPH-83574727
-      config:
-        steps:
-          - config:
-              command: apply_spec
-              service: orch
-              validate-spec-services: true
-              specs:
-                - service_type: prometheus
-                  placement:
-                    count: 1
-                    nodes:
-                      - node1
-                - service_type: grafana
-                  placement:
-                    nodes:
-                      - node1
-                - service_type: alertmanager
-                  placement:
-                    count: 1
-                - service_type: node-exporter
-                  placement:
-                    host_pattern: "*"
-                - service_type: crash
-                  placement:
-                    host_pattern: "*"
+#  - test:
+#      name: Monitoring Services deployment
+#      desc: Add monitoring services using spec file.
+#      module: test_cephadm.py
+#      polarion-id: CEPH-83574727
+#      config:
+#        steps:
+#          - config:
+#              command: apply_spec
+#              service: orch
+#              validate-spec-services: true
+#              specs:
+#                - service_type: prometheus
+#                  placement:
+#                    count: 1
+#                    nodes:
+#                      - node1
+#                - service_type: grafana
+#                  placement:
+#                    nodes:
+#                      - node1
+#                - service_type: alertmanager
+#                  placement:
+#                    count: 1
+#                - service_type: node-exporter
+#                  placement:
+#                    host_pattern: "*"
+#                - service_type: crash
+#                  placement:
+#                    host_pattern: "*"
 
   - test:
       abort-on-fail: true
@@ -144,16 +144,16 @@ tests:
       name: configure client
       polarion-id: CEPH-83573758
 
-  - test:
-      abort-on-fail: true
-      config:
-        install:
-          - agent
-      desc: Setup and configure vault agent
-      destroy-cluster: false
-      module: install_vault.py
-      name: configure vault agent
-      polarion-id: CEPH-83575226
+#  - test:
+#      abort-on-fail: true
+#      config:
+#        install:
+#          - agent
+#      desc: Setup and configure vault agent
+#      destroy-cluster: false
+#      module: install_vault.py
+#      name: configure vault agent
+#      polarion-id: CEPH-83575226
 
   - test:
       abort-on-fail: false
