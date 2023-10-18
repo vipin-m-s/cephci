@@ -173,7 +173,7 @@ def execute_s3_tests(node: CephNode, build: str, encryption: bool = False) -> in
     """
     log.debug("Executing s3-tests")
     try:
-        base_cmd = "cd s3-tests; S3TEST_CONF=config.yaml virtualenv/bin/nosetests -v"
+        base_cmd = "cd s3-tests; S3TEST_CONF=config.yaml virtualenv/bin/tox -v"
         extra_args = "-a '!fails_on_rgw,!fails_strict_rfc2616,!encryption'"
         tests = "s3tests"
 
