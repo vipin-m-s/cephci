@@ -98,6 +98,11 @@ class CephAdmin(BootstrapMixin, ShellMixin):
             repo (Str): repository (default: None)
 
         """
+        EPEL_REPOS = {
+            "7": "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm",
+            "8": "https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm",
+            "9": "https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm",
+        }
         cloud_type = self.config.get("cloud-type", "openstack")
         logger.info(f"cloud type is {cloud_type}")
         hotfix_repo = self.config.get("hotfix_repo")
@@ -117,6 +122,12 @@ class CephAdmin(BootstrapMixin, ShellMixin):
                     ),
                 )
                 node.exec_command(sudo=True, cmd="yum update metadata", check_ec=False)
+                # Epel Repo
+                node.exec_command(
+                    sudo=True,
+                    cmd=f"dnf install {EPEL_REPOS[node.distro_info['VERSION_ID'][0]]} -y",
+                    check_ec=False,
+                )
         elif repo:
             base_url = repo
             cmd = f"yum-config-manager --add-repo {base_url}"

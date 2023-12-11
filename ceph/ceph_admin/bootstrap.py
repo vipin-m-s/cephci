@@ -195,6 +195,7 @@ class BootstrapMixin:
         args = config.get("args")
         custom_repo = args.pop("custom_repo", "")
         custom_image = args.pop("custom_image", True)
+        hotfix_repo = self.config.get("hotfix_repo")
         build_type = self.config.get("build_type")
         rhbuild = self.config.get("rhbuild")
         base_url = self.config.get("base_url")
@@ -236,6 +237,8 @@ class BootstrapMixin:
             self.cluster.use_cdn = True
         elif custom_repo:
             self.set_tool_repo(repo=custom_repo)
+        elif hotfix_repo:
+            self.set_tool_repo()
         else:
             repos = ["Tools"]
             _platform = "-".join(rhbuild.split("-")[1:])
