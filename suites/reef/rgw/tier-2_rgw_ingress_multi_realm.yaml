@@ -163,7 +163,7 @@ tests:
                       - node4
                   spec:
                     backend_service: rgw.rgw.realm1
-                    virtual_ip: 10.0.211.172/22
+                    virtual_ip: 10.8.128.255/21
                     frontend_port: 443
                     monitor_port: 1967
                     ssl_cert: create-cert
@@ -189,6 +189,6 @@ tests:
                       - node6
                   spec:
                     backend_service: rgw.rgw.realm2
-                    virtual_ip: 10.0.209.108/22
+                    virtual_ip: 10.8.128.100/21
                     frontend_port: 8083
                     monitor_port: 1967
