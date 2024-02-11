@@ -285,6 +285,20 @@ def run(ceph_cluster: Ceph, **kwargs) -> int:
                 for initiator in config["initiators"]:
                     p.spawn(initiators, ceph_cluster, subsystem, initiator)
 
+        if config.get("namespaces"):
+            import pdb
+
+            pdb.set_trace()
+            for namespace_config in config.get("namespaces"):
+                if namespace_config.get("command") == "set_qos":
+                    args = namespace_config.get("args", {})
+                    subsystem = args.get("subsystem")
+                    if subsystem:
+                        qos_args = {
+                            "subsystem": subsystem,
+                            "rw-ios-per-second": args.get("rw-ios-per-second", 10),
+                        }
+                        _ = subsystem.namespace.set_qos(**{"args": {**qos_args}})
         return 0
     except Exception as err:
         LOG.error(err)
