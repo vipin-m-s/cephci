@@ -646,7 +646,7 @@ def check_coredump_generated(node, coredump_path, created_after):
     return False
 
 
-def create_files(client, mount_point, file_count):
+def create_files(client, mount_point, file_count, windows_client=False):
     """
     Create files
     Args:
@@ -656,10 +656,17 @@ def create_files(client, mount_point, file_count):
     """
     for i in range(1, file_count + 1):
         try:
-            client.exec_command(
-                sudo=True,
-                cmd=f"dd if=/dev/urandom of={mount_point}/file{i} bs=1 count=1",
-            )
+            if windows_client:
+                cmd = f"type nul > {mount_point}\\win_file{i}"
+                client.exec_command(
+                    cmd=cmd,
+                )
+            else:
+                cmd = f"dd if=/dev/urandom of={mount_point}/file{i} bs=1 count=1"
+                client.exec_command(
+                    sudo=True,
+                    cmd=cmd,
+                )
         except Exception:
             raise OperationFailedError(f"failed to create file file{i}")
 
@@ -865,11 +872,11 @@ def get_pid_limit(node, service):
     return pid_limit
 
 
-def create_yaml_config(node, config):
+def create_yaml_config(node, specs):
     """Create temp yaml file from config
     Args:
         node (ceph): ceph node
-        config (dict): ceph config
+        specs (dict): ceph specs
     Return: file name
     """
     # Create temporory file path
@@ -877,6 +884,6 @@ def create_yaml_config(node, config):
 
     # Create temporary file and dump data
     with node.remote_file(sudo=True, file_name=temp_file.name, file_mode="w") as file:
-        yaml.dump(config.get("spec"), file, default_flow_style=False)
+        yaml.dump(specs, file, default_flow_style=False)
 
     return temp_file.name

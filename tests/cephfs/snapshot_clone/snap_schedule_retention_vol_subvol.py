@@ -1,4 +1,5 @@
 import json
+import random
 import re
 import secrets
 import string
@@ -238,9 +239,12 @@ def run_snap_test(snap_test_params):
             "vol_name": snap_test_params["fs_name"],
             "group_name": "subvolgroup_snap_schedule",
         }
+        dir_suffix = "".join(
+            [random.choice(string.ascii_lowercase + string.digits) for _ in range(3)]
+        )
         subvolume = {
             "vol_name": snap_test_params["fs_name"],
-            "subvol_name": "snap_subvolume",
+            "subvol_name": f"snap_subvolume_{dir_suffix}",
             "group_name": "subvolgroup_snap_schedule",
             "size": "6442450944",
         }
@@ -1063,9 +1067,14 @@ def snap_retention_service_restart(snap_test_params):
     post_test_params["test_status"] = test_fail
     schedule_path = snap_test_params["path"]
     snap_util.remove_snap_retention(
-        client, snap_test_params["path"], ret_val=snap_test_params["retention"]
+        client,
+        snap_test_params["path"],
+        ret_val=snap_test_params["retention"],
+        fs_name=snap_test_params["fs_name"],
     )
-    snap_util.remove_snap_schedule(client, schedule_path)
+    snap_util.remove_snap_schedule(
+        client, schedule_path, fs_name=snap_test_params["fs_name"]
+    )
     snap_util.sched_snap_cleanup(client, snap_path)
     client.exec_command(sudo=True, cmd=f"umount {snap_path}")
     return post_test_params
@@ -1076,8 +1085,8 @@ def snap_retention_service_restart(snap_test_params):
 ####################
 def umount_all(mnt_paths, umount_params):
     cmd = f"rm -rf {mnt_paths['kernel']}/*file*"
-    if umount_params.get("subvol_name"):
-        cmd = f"rm -rf {mnt_paths['kernel']}{umount_params['path']}/*"
+    if "subvol" in umount_params.get("test_case"):
+        cmd = f"rm -rf {mnt_paths['kernel']}{umount_params['path']}/*file*"
     umount_params["client"].exec_command(sudo=True, cmd=cmd, timeout=1800)
     for mnt_type in mnt_paths:
         umount_params["client"].exec_command(

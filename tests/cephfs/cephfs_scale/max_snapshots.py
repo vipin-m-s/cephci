@@ -7,6 +7,7 @@ import traceback
 from ceph.ceph import CommandFailed
 from tests.cephfs.cephfs_utilsV1 import FsUtils
 from utility.log import Log
+from utility.retry import retry
 
 log = Log(__name__)
 
@@ -84,6 +85,12 @@ def run(ceph_cluster, **kw):
             sudo=True,
             cmd=f"ceph fs subvolume getpath {default_fs} subvol_max_snap",
         )
+        log.info("Note default value for mds_max_snaps_per_dir")
+        out, rc = client1.exec_command(
+            sudo=True, cmd="ceph config get mds mds_max_snaps_per_dir"
+        )
+        default_retention = int(out.strip())
+        log.info(f"Default value for mds_max_snaps_per_dir:{default_retention}")
         client1.exec_command(
             sudo=True,
             cmd=f"ceph config set mds mds_max_snaps_per_dir {max_snap}",
@@ -149,10 +156,19 @@ def run(ceph_cluster, **kw):
         for cmd in cmd_list:
             collect_ceph_details(client1, cmd)
         log.info("Clean Up in progess")
+        log.info("Reset mds_max_snaps_per_dir to default")
+        out, rc = client1.exec_command(
+            sudo=True,
+            cmd=f"ceph config set mds mds_max_snaps_per_dir {default_retention}",
+        )
+
         fs_util.enable_mds_logs(client1, default_fs)
         try:
+            retry_remove_snapshot = retry(CommandFailed, tries=3, delay=30)(
+                fs_util.remove_snapshot
+            )
             for snapshot in snapshot_list:
-                fs_util.remove_snapshot(client1, **snapshot, check_ec=False)
+                retry_remove_snapshot(client1, **snapshot, check_ec=False)
             fs_util.remove_subvolume(client1, **subvolume, check_ec=False)
         except Exception as e:
             log.info(e)

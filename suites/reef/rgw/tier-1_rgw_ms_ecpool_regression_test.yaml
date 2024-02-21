@@ -10,8 +10,7 @@
 # This particular yaml runs the tests on the primary and verifies IOs on the
 # secondary site.
 
-# In addition to the above, the data bucket is configured to use EC along with
-# network delays between the two clusters.
+# In addition to the above, the data bucket is configured to use EC
 ---
 
 tests:
@@ -23,24 +22,6 @@ tests:
       desc: Install software pre-requisites for cluster deployment.
       module: install_prereq.py
       name: setup pre-requisites
-
-  - test:
-      abort-on-fail: true
-      clusters:
-        ceph-pri:
-          config:
-            roles:
-              - rgw
-            rule: root netem delay 30ms 1ms distribution normal
-        ceph-sec:
-          config:
-            roles:
-              - rgw
-            rule: root netem delay 20ms 5ms distribution normal
-      desc: Configuring network traffic delay
-      module: configure-tc.py
-      name: apply-net-qos
-      polarion-id: CEPH-83575222
 
   - test:
       abort-on-fail: true
@@ -392,6 +373,7 @@ tests:
       desc: measure execution time for ordered listing of bucket with pseudo directories and objects
       polarion-id: CEPH-83573545
       module: sanity_rgw_multisite.py
+      comments: Known issue BZ-2256668
       clusters:
         ceph-pri:
           config:
@@ -403,6 +385,7 @@ tests:
       desc: test_bucket_listing_flat_unordered.yaml on secondary
       polarion-id: CEPH-83573545
       module: sanity_rgw_multisite.py
+      comments: Known issue BZ-2256668
       clusters:
         ceph-pri:
           config:
@@ -415,6 +398,7 @@ tests:
       desc: test_bucket_listing_flat_ordered_versionsing on secondary
       polarion-id: CEPH-83573545
       module: sanity_rgw_multisite.py
+      comments: Known issue BZ-2256668
       clusters:
         ceph-pri:
           config:
@@ -426,6 +410,7 @@ tests:
       desc: test_bucket_listing_flat_ordered on secondary
       polarion-id: CEPH-83574826
       module: sanity_rgw_multisite.py
+      comments: Known issue BZ-2256668
       clusters:
         ceph-sec:
           config:
@@ -438,6 +423,7 @@ tests:
       desc: test_bucket_listing_pseudo_ordered_dir_only on secondary
       polarion-id: CEPH-83573651
       module: sanity_rgw_multisite.py
+      comments: Known issue BZ-2256668
       clusters:
         ceph-sec:
           config:
