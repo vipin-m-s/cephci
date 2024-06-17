@@ -2,7 +2,7 @@ import time
 import traceback
 
 from utility.log import Log
-
+from tests.cephfs.cephfs_utilsV1 import FsUtils
 log = Log(__name__)
 
 
@@ -31,6 +31,7 @@ def run(ceph_cluster, **kw):
         pre_or_post = custom_config[0]
         url = custom_config[1]
         log.info("Given Kernel Information is " + str(url))
+        fs_util = FsUtils(ceph_cluster)
         verification_type = []
         if "pre" in pre_or_post:
             log.info("This is a pre-verification")
@@ -72,7 +73,7 @@ def run(ceph_cluster, **kw):
                         sudo=True, cmd="yum update kernel -y --nogpgcheck"
                     )
                     cnode.exec_command(sudo=True, cmd="sudo reboot", check_ec=False)
-                    time.sleep(30)
+                    time.sleep(90)
                     cnode.reconnect()
                     kernel_version, _ = cnode.exec_command(sudo=True, cmd="uname -r")
                     kernel_version = kernel_version.rstrip()
@@ -87,7 +88,7 @@ def run(ceph_cluster, **kw):
             return 0
         elif "post" in verification_type:
             log.info(url)
-            kernel_cmds = ["rpm", "-ivh"]
+            kernel_cmds = ["rpm", "-Uvh"]
             if "rhel-8" in url:
                 kernel_package = url.split("/")[-1]
                 url = url.strip(kernel_package)
@@ -122,15 +123,19 @@ def run(ceph_cluster, **kw):
                 kernel_cmds.append(url + kernel_modules_package)
                 kernel_cmds.append(url + kernel_package)
             kernel_update_cmd = " ".join(kernel_cmds).replace("\n", "")
-            for cnode in ceph_nodes:
+            log.info(f"ceph_nodes={ceph_nodes}")
+            log.info(f"ceph node length={len(ceph_nodes)}")
+            for i,cnode in enumerate(ceph_nodes):
+                log.info(f"Updating kernel on node {i}th")
                 kernel_version, _ = cnode.exec_command(sudo=True, cmd="uname -r")
+                log.info(f"The host name is = {cnode.hostname} and current kernel version is {kernel_version}")
                 log.info(f"Current kernel version is {kernel_version}")
                 log.info("Updating kernel using below packages")
                 log.info(kernel_update_cmd)
                 cnode.exec_command(sudo=True, cmd=kernel_update_cmd)
-                cnode.exec_command(sudo=True, cmd="sudo reboot", check_ec=False)
-                time.sleep(30)
-                cnode.reconnect()
+                time.sleep(60)
+                fs_util.reboot_node(cnode)
+                log.info(f"The host name is = {cnode.hostname} and current kernel version is {kernel_version}")
                 kernel_version, rc = cnode.exec_command(sudo=True, cmd="uname -r")
                 kernel_version = kernel_version.rstrip()
                 kernel_package = kernel_package.rstrip()
