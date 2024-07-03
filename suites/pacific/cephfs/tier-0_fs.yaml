@@ -125,6 +125,11 @@ tests:
       desc: Deploy mds using cephadm and increase & decrease number of mds.
       polarion-id: CEPH-83574286
       abort-on-fail: false
+  - test:
+      name: xfs_test
+      module: xfs_tests.py
+      desc: Running XFS test on CephFS
+      abort-on-fail: false
   -
     test:
       desc: "generate sosreport"
